@@ -1,0 +1,85 @@
+发送邮件
+
+1.在项目下面的application里找到common.php
+修改为文件夹里的文件格式
+
+2.在项目下面的vendor里下phpmailer组件，如果没有直接把本文件夹的拉过去
+
+3.控制器里的方法，头部需要引用phpmailer组件（use phpmailer\phpmailer;）
+
+4.  发送邮件调用的方法(code就是验证码)
+
+  public function Send_mail(){
+        $email=input('post.email');
+////
+        $username=input('post.username');	
+	//验证码
+        $code=$this->createSMSCode();
+//        //存储验证码，相当于全局变量，因为再次调用createSMSCode时，代码会变
+        session("code",$code);
+        session("$email",$email);
+        $title="上海刻契验证码";
+        $data="yes";
+        $body="您的验证码是".$code."，请正确填写";
+        echo json_decode($data);
+        SendMail($email,$title,$body);
+    }
+
+5.前台页面
+
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+
+<form method="post" action="{:url('test/yz')}">
+    <label>请输入注册邮箱：</label><input type="text" name="e_mail" id="e_mail" class="fot_name">
+    <a href="javascript:;" id="send" class="fasong" style="display: inline-block;width:70px;height:29px;background:#f3980f;;color:#fff;line-height: 29px;text-align: center;border:1px solid #919191;">发送</a><br/>
+    <div style="margin-left:130px;color:orange;" id="back"></div>
+    <label>验证码：</label><input type="text"  name="code" class="yan"/><br/>
+    <div class="ccc"><input type="submit" value="提交" class="sub"></div>
+</form>
+
+</body>
+
+6.js
+
+<script src="http://libs.baidu.com/jquery/2.0.0/jquery.js"></script>
+<script>
+    $("#send").click(function(){
+        var e_mail=$("#e_mail").val();
+            $.ajax({
+                url:"{:url('test/do_test')}",
+                type:'POST',
+                data:{"email":$("#e_mail").val()},
+                success:function(result){
+                    $("#back").html(result);
+
+                },error:function(){
+                    alert('错误');
+                }
+            });
+    });
+</script>
+</html>
+
+7.发送后code的验证方法
+
+    public function yz(){
+        $code=input('post.code');
+        if($code==session('code')){
+            echo 'succ';
+            session_destroy();
+        }else{
+            echo 'error';
+        }
+    }
+
+
+验证码验证成功！
